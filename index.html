@@ -254,7 +254,7 @@ footer .footer-bottom strong { color: var(--white); }
   <div class="container hero-content">
     <span class="hero-tag">제8회 교육 공공데이터 AI 활용대회 일반부 · 프로토타입 시연</span>
     <h1 class="hero-title">교실 골든타임 30초<br/><span style="opacity:0.85;font-weight:600;">학교 PC가 모든 답을 가지고 있다</span></h1>
-    <p class="hero-sub">학교폭력·교권침해·재난 위기 발생 시 매뉴얼 도달 30분 → <strong>30초</strong>. 교육 공공데이터 8 결합 RAG 보좌시스템 — KERIS·KEDI·KRIVET 인용 강제·외부 전송 0·학교 PC 30분 셋업.</p>
+    <p class="hero-sub">교실 위기 30초 + 일상 행정 30% 경감 — <strong>14 시나리오 통합</strong> (비상 4 + 행정 12). 매뉴얼 도달 30분 → <strong>30초</strong>·교원 행정 7.23h/주 → 5h. 교육 공공데이터 8 결합 RAG — KERIS·KEDI·KRIVET 인용 강제·외부 전송 0.</p>
     <div class="hero-stats">
       <div class="hero-stat"><div class="val">30초</div><div class="lab">매뉴얼 도달</div></div>
       <div class="hero-stat"><div class="val">8</div><div class="lab">교육 공공데이터</div></div>
@@ -307,9 +307,9 @@ footer .footer-bottom strong { color: var(--white); }
 <!-- ==================== SECTION 2: RAG DEMO ==================== -->
 <section class="section" id="demo">
   <div class="container">
-    <span class="section-tag">② AI 보좌시스템 실시간 시연</span>
-    <h2 class="section-title">"학생이 다른 학생을 때렸어요" — 30초 답변 시연</h2>
-    <p class="section-sub">RAG 파이프라인 5 단계 (입력 라우터 → Hybrid Search → Reranker → Gemma 4 E4B 생성 → 인용 강제) 시뮬레이션. 8 교육 공공데이터셋이 답변에 실제 결합되는지 확인 가능.</p>
+    <span class="section-tag">② AI 보좌시스템 실시간 시연 — 8 시나리오</span>
+    <h2 class="section-title">교실 위기 4 + 일상 행정 4 시나리오 — 30초 답변 시연</h2>
+    <p class="section-sub">RAG 파이프라인 5 단계 (입력 라우터 → Hybrid Search → Reranker → Gemma 4 E4B 생성 → 인용 강제) 시뮬레이션. <strong>비상 대응 (학폭·교권·재난·위기학생) + 행정 (예산·계약·복무·교육과정)</strong> 8 시나리오로 매일 활용. 각종 법령·예규·매뉴얼 자동 정합.</p>
     <div class="rag-demo">
       <div class="rag-input-box">
         <div class="rag-input-label">⌨ 교사 입력 (Ctrl+Alt+1 단축키 또는 음성)</div>
@@ -318,10 +318,18 @@ footer .footer-bottom strong { color: var(--white); }
           <button class="btn btn-primary" id="rag-start" onclick="runRAG()">▶ 시연 시작</button>
         </div>
         <div class="rag-quick">
+          <span style="font-size:13px;font-weight:700;color:var(--db-700);margin-right:6px;align-self:center;">교실 4:</span>
           <button onclick="setInput('학생이 다른 학생을 때렸어요')">학교폭력</button>
           <button onclick="setInput('학부모가 큰 소리로 항의하고 있어요')">교권침해</button>
           <button onclick="setInput('화학실에서 약품이 새고 있어요')">재난·안전</button>
           <button onclick="setInput('학생이 자해 흔적을 보여요')">위기학생</button>
+        </div>
+        <div class="rag-quick" style="margin-top:8px;">
+          <span style="font-size:13px;font-weight:700;color:var(--db-700);margin-right:6px;align-self:center;">행정 4:</span>
+          <button onclick="setInput('운영비 잔액과 집행률은?')">💰 예산 집행</button>
+          <button onclick="setInput('수의계약 한도와 절차?')">📋 수의계약</button>
+          <button onclick="setInput('교사 출장 일비 기준?')">✈ 복무·여비</button>
+          <button onclick="setInput('올해 교육과정계획서 비전 초안')">📚 교육과정</button>
         </div>
       </div>
       <div class="rag-steps">
@@ -594,6 +602,46 @@ const scenarios = {
       { content: '교육청 위기학생 보고 양식', source: '시도교육청 양식' },
       { content: '학생 노출 강제 마스킹 (전자칠판 잠금)', source: '본 시스템 보안' },
       { content: 'KESS 학생 정서·복지 통계 (정책 효과)', source: 'kess.kedi.re.kr · 공공누리 1유형', highlight: true }
+    ]
+  },
+  '운영비 잔액과 집행률은?': {
+    title: '💰 예산 집행 즉시 분석',
+    items: [
+      { content: '학교회계 과목 코드: 운영비-기본운영-행정운영비 잔액', source: '학교회계규칙 §17' },
+      { content: '월별 집행률 추이 + 동기 대비 (전년·전월)', source: '지방교육행정기관 회계규칙' },
+      { content: '추경·이월·전용 가능성 분석 + 시한', source: '시도교육청 예산편성 지침' },
+      { content: '불용 위험 경고 (집행률 < 60% 시)', source: '본 시스템 분석' },
+      { content: '학교알리미 동급 학교 회계 벤치마크 ⭐', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+    ]
+  },
+  '수의계약 한도와 절차?': {
+    title: '📋 수의계약 한도·절차',
+    items: [
+      { content: '지방계약법 §17 수의계약 사유 (소액·긴급 등)', source: '법제처 OpenAPI' },
+      { content: '시행령 §25 수의계약 한도 (5천만원·2천만원 등 구분)', source: '지방계약법 시행령' },
+      { content: '시도교육청 예규 — 구체 한도·절차', source: '시도교육청 계약 매뉴얼' },
+      { content: '필수 첨부 서류 + 견적서 양식', source: '계약담당관 매뉴얼' },
+      { content: '감사 사례 — 수의계약 부적정 패턴 ⭐', source: '시도교육청 감사 사례집', highlight: true }
+    ]
+  },
+  '교사 출장 일비 기준?': {
+    title: '✈ 출장 복무·여비 즉시 안내',
+    items: [
+      { content: '공무원여비규정 §6 일비 기준 (국내 출장)', source: '법제처 OpenAPI' },
+      { content: '시도교육청 여비 매뉴얼 (지역별 일비·식비)', source: '시도교육청 복무 매뉴얼' },
+      { content: '출장 승인 절차 + 승인권자 (직급별)', source: '교원·공무원 복무 규정' },
+      { content: '여비 정산 양식 + 영수증 처리 매뉴얼', source: '회계담당관 매뉴얼' },
+      { content: '감사 사례 — 일비 오적용·중복 청구 패턴 ⭐', source: '시도교육청 감사 사례집', highlight: true }
+    ]
+  },
+  '올해 교육과정계획서 비전 초안': {
+    title: '📚 교육과정계획서 작성 자동 초안',
+    items: [
+      { content: '2022 개정 교육과정 학교 비전 4축', source: '교육부 교육과정 고시' },
+      { content: '시도교육청 교육과정 시책 (올해 중점)', source: '시도교육청 교육과정 매뉴얼' },
+      { content: '전년도 학교 교육과정 자료 기반 초안 자동 생성', source: 'kb_school + RAG' },
+      { content: '학교운영위원회 심의 일정 + 양식', source: '학교운영위원회 매뉴얼' },
+      { content: '한국교육고용패널 학교 평가 데이터 결합 ⭐', source: 'krivet.re.kr · 공공누리 1유형', highlight: true }
     ]
   }
 };
