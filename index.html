@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교실 골든타임 30초 — 교육 공공데이터 8 결합 AI 보좌시스템 시연</title>
+<meta name="description" content="제8회 교육 공공데이터 AI 활용대회 일반부 — KERIS·KEDI·KRIVET 8 데이터셋 결합 RAG 시스템 시연 프로토타입">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<style>
+:root {
+  --db-700: #1E3A8A; --db-500: #3B82F6; --db-300: #93C5FD; --db-100: #DBEAFE;
+  --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-300: #D1D5DB;
+  --gray-500: #6B7280; --gray-700: #374151; --gray-900: #111827; --white: #FFFFFF;
+  --warn: #DC2626; --ok: #059669; --accent: #F59E0B;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-feature-settings: 'tnum';
+  color: var(--gray-900); background: var(--gray-50); line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+/* ==================== HEADER ==================== */
+.hero {
+  background: linear-gradient(135deg, var(--db-700) 0%, var(--db-500) 100%);
+  color: var(--white); padding: 80px 0 100px; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: -100px; right: -100px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-tag {
+  display: inline-block; background: rgba(255,255,255,0.15);
+  padding: 8px 18px; border-radius: 20px;
+  font-size: 14px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 24px;
+}
+.hero-title { font-size: 56px; font-weight: 800; letter-spacing: -2.5px; line-height: 1.15; margin-bottom: 20px; }
+.hero-sub { font-size: 22px; font-weight: 500; opacity: 0.92; letter-spacing: -0.5px; margin-bottom: 36px; max-width: 800px; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; max-width: 800px; }
+.hero-stat { background: rgba(255,255,255,0.12); padding: 20px 24px; border-radius: 12px; backdrop-filter: blur(10px); }
+.hero-stat .val { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+.hero-stat .lab { font-size: 14px; font-weight: 500; opacity: 0.85; margin-top: 4px; }
+.hero-cta { margin-top: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; padding: 14px 28px; border-radius: 8px;
+  font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
+  text-decoration: none; transition: all 0.2s; cursor: pointer; border: none;
+}
+.btn-primary { background: var(--white); color: var(--db-700); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.btn-ghost { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.4); }
+.btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+/* ==================== SECTION COMMON ==================== */
+.section { padding: 80px 0; }
+.section-light { background: var(--white); }
+.section-tag {
+  display: inline-block; background: var(--db-100); color: var(--db-700);
+  padding: 6px 14px; border-radius: 16px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.section-title { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.2; margin-bottom: 16px; color: var(--gray-900); }
+.section-sub { font-size: 18px; font-weight: 500; color: var(--gray-700); letter-spacing: -0.3px; max-width: 800px; margin-bottom: 48px; line-height: 1.6; }
+
+/* ==================== SECTION 1: KOREA MAP ==================== */
+#map-container { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+#korea-map { background: var(--white); border-radius: 16px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+#korea-map svg { width: 100%; height: 540px; }
+.region-path { stroke: var(--white); stroke-width: 1.5; transition: opacity 0.2s; cursor: pointer; }
+.region-path:hover { opacity: 0.7; stroke: var(--gray-900); stroke-width: 2.5; }
+.region-tooltip {
+  position: absolute; background: var(--gray-900); color: var(--white);
+  padding: 10px 14px; border-radius: 6px; font-size: 14px; font-weight: 600;
+  pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100;
+  letter-spacing: -0.3px;
+}
+.region-tooltip .name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.region-tooltip .val { font-size: 13px; opacity: 0.85; }
+.region-tooltip.show { opacity: 1; }
+.map-side {
+  background: var(--white); border-radius: 16px; padding: 28px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.map-side h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--db-700); }
+.map-side .selected-region {
+  background: var(--db-100); padding: 16px 18px; border-radius: 8px;
+  margin-bottom: 16px;
+}
+.map-side .selected-region .name { font-size: 22px; font-weight: 800; color: var(--db-700); margin-bottom: 6px; letter-spacing: -0.5px; }
+.map-side .selected-region .stat { font-size: 14px; color: var(--gray-700); }
+.map-legend { margin-top: 24px; }
+.map-legend-title { font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 10px; }
+.map-legend-bar { display: flex; gap: 2px; margin-bottom: 6px; }
+.map-legend-bar div { flex: 1; height: 14px; }
+.map-legend-axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500); font-weight: 500; }
+.data-source-note {
+  margin-top: 20px; padding: 14px 16px; background: var(--gray-50);
+  border-left: 4px solid var(--accent); font-size: 13px; color: var(--gray-700); line-height: 1.5;
+}
+
+/* ==================== SECTION 2: RAG DEMO ==================== */
+.rag-demo {
+  background: var(--white); border-radius: 16px; padding: 40px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.rag-input-box {
+  border: 3px solid var(--db-500); background: var(--db-100); padding: 24px;
+  border-radius: 12px; margin-bottom: 24px;
+}
+.rag-input-label { font-size: 13px; font-weight: 700; color: var(--db-700); letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
+.rag-input-row { display: flex; gap: 12px; align-items: center; }
+.rag-input { flex: 1; padding: 14px 18px; font-size: 17px; border: 2px solid var(--gray-300); border-radius: 8px; font-family: inherit; font-weight: 500; background: var(--white); color: var(--gray-900); }
+.rag-input:focus { outline: none; border-color: var(--db-700); }
+.rag-quick { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.rag-quick button {
+  background: var(--white); border: 2px solid var(--db-300); color: var(--db-700);
+  padding: 6px 14px; border-radius: 16px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.rag-quick button:hover { background: var(--db-700); color: var(--white); border-color: var(--db-700); }
+.rag-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0 24px; }
+.rag-step { padding: 18px 20px; border-radius: 10px; background: var(--gray-50); border-top: 4px solid var(--gray-300); transition: all 0.3s; }
+.rag-step.active { background: var(--db-100); border-top-color: var(--db-700); }
+.rag-step.done { background: #ECFDF5; border-top-color: var(--ok); }
+.rag-step .t { font-size: 13px; font-weight: 800; color: var(--db-700); letter-spacing: 0.5px; }
+.rag-step .l { font-size: 16px; font-weight: 700; color: var(--gray-900); margin: 6px 0; letter-spacing: -0.3px; }
+.rag-step .d { font-size: 13px; color: var(--gray-700); font-weight: 500; line-height: 1.5; }
+.rag-output {
+  background: var(--gray-50); border: 3px solid var(--db-700); border-radius: 12px;
+  padding: 28px; opacity: 0.4; transition: opacity 0.5s;
+}
+.rag-output.show { opacity: 1; }
+.rag-output-label { font-size: 13px; font-weight: 700; color: var(--db-700); letter-spacing: 1px; margin-bottom: 14px; text-transform: uppercase; }
+.rag-answer-title { font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 18px; letter-spacing: -0.5px; }
+.rag-answer-item {
+  padding: 14px 18px; border-left: 4px solid var(--db-500); background: var(--white);
+  margin-bottom: 10px; border-radius: 0 8px 8px 0;
+}
+.rag-answer-item.highlight { background: var(--db-100); border-left-color: var(--db-700); }
+.rag-answer-item .num { display: inline-block; font-weight: 800; color: var(--db-700); margin-right: 8px; }
+.rag-answer-item .content { font-size: 16px; font-weight: 600; color: var(--gray-900); letter-spacing: -0.3px; }
+.rag-answer-item .source { display: block; font-size: 12px; color: var(--gray-500); margin-top: 6px; font-weight: 500; }
+.rag-answer-item.highlight .source { color: var(--db-700); font-weight: 700; }
+
+/* ==================== SECTION 3: 8 DATASETS ==================== */
+.datasets-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.dataset-card {
+  background: var(--white); padding: 22px 24px; border-radius: 12px;
+  border-top: 4px solid var(--db-700); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  cursor: pointer; transition: all 0.2s;
+}
+.dataset-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(30,58,138,0.15); }
+.dataset-card.active { background: var(--db-100); border-top-color: var(--accent); }
+.dataset-card .num { font-size: 13px; font-weight: 700; color: var(--db-700); letter-spacing: 0.5px; }
+.dataset-card .name { font-size: 17px; font-weight: 800; color: var(--gray-900); margin: 6px 0; letter-spacing: -0.4px; line-height: 1.3; }
+.dataset-card .org { font-size: 12px; color: var(--gray-500); font-weight: 600; margin-bottom: 6px; }
+.dataset-card .url { font-size: 11px; color: var(--db-700); font-weight: 600; font-family: 'SF Mono', monospace; word-break: break-all; }
+.dataset-detail {
+  background: var(--white); border-radius: 16px; padding: 32px; margin-top: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: none;
+}
+.dataset-detail.show { display: block; }
+.dataset-detail h3 { font-size: 24px; font-weight: 800; color: var(--db-700); margin-bottom: 14px; letter-spacing: -0.5px; }
+.dataset-detail .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0; }
+.dataset-detail .meta-item { background: var(--gray-50); padding: 14px 16px; border-radius: 8px; }
+.dataset-detail .meta-item .l { font-size: 12px; font-weight: 700; color: var(--gray-500); letter-spacing: 0.5px; text-transform: uppercase; }
+.dataset-detail .meta-item .v { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-top: 4px; letter-spacing: -0.3px; }
+.dataset-detail .desc { font-size: 15px; color: var(--gray-700); line-height: 1.7; }
+
+/* ==================== SECTION 4: VALIDATION DASHBOARD ==================== */
+.val-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 32px; }
+.val-progress {
+  background: linear-gradient(135deg, var(--db-700) 0%, var(--db-500) 100%);
+  color: var(--white); padding: 36px 32px; border-radius: 16px;
+}
+.val-progress .num { font-size: 64px; font-weight: 800; letter-spacing: -3px; line-height: 1; }
+.val-progress .num-sub { font-size: 18px; opacity: 0.85; font-weight: 600; margin-top: 8px; }
+.val-progress .label { font-size: 14px; opacity: 0.85; margin-top: 18px; font-weight: 500; line-height: 1.5; }
+.val-progress .bar { background: rgba(255,255,255,0.2); height: 12px; border-radius: 6px; margin-top: 24px; overflow: hidden; }
+.val-progress .bar-fill { background: var(--white); height: 100%; width: 0%; border-radius: 6px; transition: width 0.6s; }
+.val-categories { background: var(--white); padding: 28px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+.val-categories h3 { font-size: 20px; font-weight: 800; color: var(--db-700); margin-bottom: 18px; letter-spacing: -0.5px; }
+.val-cat-row { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); }
+.val-cat-row:last-child { border-bottom: none; }
+.val-cat-name { width: 180px; font-size: 15px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.3px; }
+.val-cat-bar { flex: 1; height: 10px; background: var(--gray-100); border-radius: 5px; overflow: hidden; }
+.val-cat-bar-fill { background: var(--db-300); height: 100%; width: 0%; border-radius: 5px; }
+.val-cat-num { width: 80px; text-align: right; font-size: 14px; font-weight: 700; color: var(--gray-500); letter-spacing: -0.3px; }
+.val-target-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.val-target { background: var(--gray-50); padding: 20px 18px; border-radius: 10px; text-align: center; border-top: 3px solid var(--db-700); }
+.val-target .v { font-size: 26px; font-weight: 800; color: var(--db-700); letter-spacing: -1px; }
+.val-target .l { font-size: 12px; font-weight: 600; color: var(--gray-700); margin-top: 4px; letter-spacing: -0.2px; }
+
+/* ==================== SECTION 5: SIMULATOR ==================== */
+.sim-container { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.sim-input {
+  background: var(--white); padding: 32px; border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.sim-input h3 { font-size: 22px; font-weight: 800; color: var(--db-700); margin-bottom: 24px; letter-spacing: -0.5px; }
+.sim-field { margin-bottom: 22px; }
+.sim-field label { display: block; font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; letter-spacing: -0.2px; }
+.sim-field input[type="range"] { width: 100%; }
+.sim-field .v {
+  display: inline-block; background: var(--db-100); color: var(--db-700);
+  padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 800;
+  letter-spacing: -0.3px; margin-left: 8px;
+}
+.sim-output {
+  background: linear-gradient(135deg, var(--db-700) 0%, var(--db-500) 100%);
+  color: var(--white); padding: 36px 32px; border-radius: 16px;
+}
+.sim-output h3 { font-size: 22px; font-weight: 800; margin-bottom: 28px; letter-spacing: -0.5px; }
+.sim-result { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
+.sim-result:last-child { border-bottom: none; }
+.sim-result .l { font-size: 14px; opacity: 0.85; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.2px; }
+.sim-result .v { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+.sim-result .sub { font-size: 13px; opacity: 0.85; margin-top: 4px; font-weight: 500; }
+
+/* ==================== FOOTER ==================== */
+footer { background: var(--gray-900); color: var(--gray-300); padding: 60px 0 40px; }
+footer .footer-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+footer h4 { font-size: 16px; font-weight: 800; color: var(--white); margin-bottom: 14px; letter-spacing: -0.3px; }
+footer .footer-meta { font-size: 14px; line-height: 1.8; }
+footer a { color: var(--db-300); text-decoration: none; }
+footer .footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;
+  font-size: 13px; color: var(--gray-500); line-height: 1.7;
+}
+footer .footer-bottom strong { color: var(--white); }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .hero-title { font-size: 36px; }
+  .hero-sub { font-size: 17px; }
+  .section-title { font-size: 28px; }
+  .hero-stats, .rag-steps, .datasets-grid, .sim-container, .val-grid, .val-target-stats, footer .footer-row { grid-template-columns: 1fr; }
+  #map-container { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="container hero-content">
+    <span class="hero-tag">제8회 교육 공공데이터 AI 활용대회 일반부 · 프로토타입 시연</span>
+    <h1 class="hero-title">교실 골든타임 30초<br/><span style="opacity:0.85;font-weight:600;">학교 PC가 모든 답을 가지고 있다</span></h1>
+    <p class="hero-sub">학교폭력·교권침해·재난 위기 발생 시 매뉴얼 도달 30분 → <strong>30초</strong>. 교육 공공데이터 8 결합 RAG 보좌시스템 — KERIS·KEDI·KRIVET 인용 강제·외부 전송 0·학교 PC 30분 셋업.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val">30초</div><div class="lab">매뉴얼 도달</div></div>
+      <div class="hero-stat"><div class="val">8</div><div class="lab">교육 공공데이터</div></div>
+      <div class="hero-stat"><div class="val">₩0</div><div class="lab">신규 예산</div></div>
+      <div class="hero-stat"><div class="val">11,887</div><div class="lab">학교 확산 가능</div></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#demo" class="btn btn-primary">▶ RAG 시연 시작</a>
+      <a href="#map" class="btn btn-ghost">17 시도 분포 보기</a>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 1: KOREA MAP ==================== -->
+<section class="section section-light" id="map">
+  <div class="container">
+    <span class="section-tag">① 17 시도 분포</span>
+    <h2 class="section-title">전국 17 시도 학교폭력 발생률 분포</h2>
+    <p class="section-sub">학교알리미 공시 데이터 기반 시도별 분포 시각화. 시도를 클릭하면 해당 지역 시뮬레이션 시나리오로 진입합니다.</p>
+    <div id="map-container">
+      <div id="korea-map">
+        <svg id="map-svg"></svg>
+      </div>
+      <div class="map-side">
+        <h3>📍 선택 지역</h3>
+        <div class="selected-region" id="selected-region">
+          <div class="name">시도를 클릭하세요</div>
+          <div class="stat">시도별 학교폭력 발생률·학교수·평균 처리일 등 분포 확인 가능</div>
+        </div>
+        <div class="map-legend">
+          <div class="map-legend-title">발생률 분포</div>
+          <div class="map-legend-bar">
+            <div style="background:#93C5FD"></div>
+            <div style="background:#60A5FA"></div>
+            <div style="background:#3B82F6"></div>
+            <div style="background:#2563EB"></div>
+            <div style="background:#1E3A8A"></div>
+          </div>
+          <div class="map-legend-axis"><span>낮음</span><span>중간</span><span>높음</span></div>
+        </div>
+        <div class="data-source-note">
+          <strong>출처:</strong> 학교알리미 학교폭력 발생·조치 현황 (schoolinfo.go.kr / 공공누리 제1유형 / 교육부·KERIS)<br/>
+          <strong>※ 시연 개념도:</strong> 색상 분포는 개념 시각화이며, 정확한 실데이터는 schoolinfo.go.kr 공시 자료를 직접 참조해 주세요.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 2: RAG DEMO ==================== -->
+<section class="section" id="demo">
+  <div class="container">
+    <span class="section-tag">② AI 보좌시스템 실시간 시연</span>
+    <h2 class="section-title">"학생이 다른 학생을 때렸어요" — 30초 답변 시연</h2>
+    <p class="section-sub">RAG 파이프라인 5 단계 (입력 라우터 → Hybrid Search → Reranker → Gemma 4 E4B 생성 → 인용 강제) 시뮬레이션. 8 교육 공공데이터셋이 답변에 실제 결합되는지 확인 가능.</p>
+    <div class="rag-demo">
+      <div class="rag-input-box">
+        <div class="rag-input-label">⌨ 교사 입력 (Ctrl+Alt+1 단축키 또는 음성)</div>
+        <div class="rag-input-row">
+          <input type="text" class="rag-input" id="rag-input-field" value="학생이 다른 학생을 때렸어요" placeholder="비상 상황을 입력하세요...">
+          <button class="btn btn-primary" id="rag-start" onclick="runRAG()">▶ 시연 시작</button>
+        </div>
+        <div class="rag-quick">
+          <button onclick="setInput('학생이 다른 학생을 때렸어요')">학교폭력</button>
+          <button onclick="setInput('학부모가 큰 소리로 항의하고 있어요')">교권침해</button>
+          <button onclick="setInput('화학실에서 약품이 새고 있어요')">재난·안전</button>
+          <button onclick="setInput('학생이 자해 흔적을 보여요')">위기학생</button>
+        </div>
+      </div>
+      <div class="rag-steps">
+        <div class="rag-step" id="step-0">
+          <div class="t">T + 0~5초</div>
+          <div class="l">① 입력 라우터 + Hybrid Search</div>
+          <div class="d">텍스트·이미지(OCR)·음성(STT) 정규화 → Dense (BGE-M3) + Sparse (BM25) 검색 → Top-20 청크</div>
+        </div>
+        <div class="rag-step" id="step-1">
+          <div class="t">T + 5~15초</div>
+          <div class="l">② Cross-Encoder Reranker</div>
+          <div class="d">Top-20 → Top-5 정밀 재순위 (회수율 ≥ 0.85). KERIS·KEDI·KRIVET 8 데이터셋에서 관련 청크 검색</div>
+        </div>
+        <div class="rag-step" id="step-2">
+          <div class="t">T + 15~30초</div>
+          <div class="l">③ Gemma 4 E4B 응답 + 인용 강제</div>
+          <div class="d">법령·매뉴얼·학교알리미 통계 결합. "모름" 기본값 + PDF 로그 100% 보존</div>
+        </div>
+      </div>
+      <div class="rag-output" id="rag-output">
+        <div class="rag-output-label">📋 T+30초 — 답변 5 묶음 (모든 인용에 출처 라벨 강제)</div>
+        <div class="rag-answer-title" id="rag-answer-title">⚠ 학교폭력 즉시 절차</div>
+        <div id="rag-answers"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 3: 8 DATASETS ==================== -->
+<section class="section section-light">
+  <div class="container">
+    <span class="section-tag">③ 8 교육 공공데이터셋 결합</span>
+    <h2 class="section-title">KERIS·KEDI·KRIVET 8 데이터셋 → 단일 마스터 색인</h2>
+    <p class="section-sub">운영안내 p.14~15 명시 활용 가능 교육 공공데이터 8 데이터셋. 각 카드를 클릭하면 운영 주체·라이선스·갱신 주기·결합 시나리오 상세 확인.</p>
+    <div class="datasets-grid" id="datasets-grid"></div>
+    <div class="dataset-detail" id="dataset-detail"></div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 4: VALIDATION ==================== -->
+<section class="section">
+  <div class="container">
+    <span class="section-tag">④ Phase 0 PoC 검증셋 대시보드</span>
+    <h2 class="section-title">검증셋 70건 진행 현황 — 현재 0/70 (시범 1교 PoC 예정)</h2>
+    <p class="section-sub">Beck/Fowler "검증셋 없으면 못 간다" — 본 시스템은 시범 1교 PoC (M1~M3) 시점에 70건 검증셋 회귀 테스트 + Tier 2 cross-check 완료 예정. 본 대시보드는 PoC 진행에 따라 자동 채워집니다.</p>
+    <div class="val-grid">
+      <div class="val-progress">
+        <div class="num"><span id="val-num">0</span> / 70</div>
+        <div class="num-sub">검증셋 측정 진행</div>
+        <div class="bar"><div class="bar-fill" id="val-bar"></div></div>
+        <div class="label">시범 1교 PoC (M1~M3) 완료 시 자동 측정. 미달 시 Beck "사업 중단 결정 지점" 발동.</div>
+      </div>
+      <div class="val-categories">
+        <h3>📊 6 범주 70건 분포 (목표)</h3>
+        <div class="val-cat-row"><div class="val-cat-name">텍스트 답변</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="100"></div></div><div class="val-cat-num">40건</div></div>
+        <div class="val-cat-row"><div class="val-cat-name">이미지 입력 (OCR)</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="20"></div></div><div class="val-cat-num">8건</div></div>
+        <div class="val-cat-row"><div class="val-cat-name">음성 입력 (STT)</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="17.5"></div></div><div class="val-cat-num">7건</div></div>
+        <div class="val-cat-row"><div class="val-cat-name">학생 노출 차단</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="12.5"></div></div><div class="val-cat-num">5건</div></div>
+        <div class="val-cat-row"><div class="val-cat-name">교육 공공데이터 결합 ⭐</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="12.5"></div></div><div class="val-cat-num">5건</div></div>
+        <div class="val-cat-row"><div class="val-cat-name">회계 비상 시나리오</div><div class="val-cat-bar"><div class="val-cat-bar-fill" data-target="12.5"></div></div><div class="val-cat-num">5건</div></div>
+        <div class="val-target-stats">
+          <div class="val-target"><div class="v">≥ 85%</div><div class="l">Precision</div></div>
+          <div class="val-target"><div class="v">≥ 90%</div><div class="l">Citation</div></div>
+          <div class="val-target"><div class="v">≤ 5%</div><div class="l">Hallucination</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 5: SIMULATOR ==================== -->
+<section class="section section-light">
+  <div class="container">
+    <span class="section-tag">⑤ 정책 효과 시뮬레이터</span>
+    <h2 class="section-title">학교 수·교사 수·도달시간 → 정책 효과 즉시 계산</h2>
+    <p class="section-sub">슬라이더를 조정하면 본 시스템 도입 시 정책 효과가 실시간으로 계산됩니다. KESS 2022 교원 행정업무 시간 (주당 7.23h) 기반.</p>
+    <div class="sim-container">
+      <div class="sim-input">
+        <h3>📥 시뮬레이션 입력</h3>
+        <div class="sim-field">
+          <label>적용 학교 수<span class="v" id="v-schools">1</span></label>
+          <input type="range" id="r-schools" min="1" max="11887" value="1" oninput="runSim()">
+        </div>
+        <div class="sim-field">
+          <label>학교당 평균 교사 수<span class="v" id="v-teachers">40</span></label>
+          <input type="range" id="r-teachers" min="10" max="100" value="40" oninput="runSim()">
+        </div>
+        <div class="sim-field">
+          <label>현재 매뉴얼 도달 시간 (분)<span class="v" id="v-time">10</span></label>
+          <input type="range" id="r-time" min="3" max="30" value="10" oninput="runSim()">
+        </div>
+        <div class="sim-field">
+          <label>본 시스템 도입 후 (초)<span class="v" id="v-target">30</span></label>
+          <input type="range" id="r-target" min="10" max="60" value="30" oninput="runSim()">
+        </div>
+      </div>
+      <div class="sim-output">
+        <h3>📤 시뮬레이션 결과</h3>
+        <div class="sim-result">
+          <div class="l">도달시간 단축</div>
+          <div class="v" id="o-saving">95.0%</div>
+          <div class="sub">사안당 평균 단축 효과</div>
+        </div>
+        <div class="sim-result">
+          <div class="l">연간 절감 시간 (전체 교사)</div>
+          <div class="v" id="o-hours">63 시간</div>
+          <div class="sub">학교당 행정업무 부담 감소</div>
+        </div>
+        <div class="sim-result">
+          <div class="l">사회적 효과 (행정업무 시간 환산)</div>
+          <div class="v" id="o-value">₩315만</div>
+          <div class="sub">KESS 7.23h × 시간당 임금 추정</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <div class="container">
+    <div class="footer-row">
+      <div>
+        <h4>교실 골든타임 30초</h4>
+        <div class="footer-meta">
+          교육 공공데이터 8 결합 RAG 보좌시스템 시연 프로토타입<br/>
+          제8회 교육 공공데이터 AI 활용대회 일반부 (2026)<br/>
+          학교 PC 30분 셋업 · 외부 전송 0 · Apache 2.0
+        </div>
+      </div>
+      <div>
+        <h4>활용 AI</h4>
+        <div class="footer-meta">
+          출품작 작성: Claude Opus 4.7 (Anthropic)<br/>
+          시스템 적용 (Tier 1): Gemma 4 E4B<br/>
+          시스템 적용 (Tier 2): Gemma 3 27B / 4 31B
+        </div>
+      </div>
+      <div>
+        <h4>8 데이터셋 출처</h4>
+        <div class="footer-meta">
+          교육부·KERIS·KEDI·KRIVET<br/>
+          공공누리 제1유형 (출처표시)<br/>
+          운영안내 p.14~15 정합
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <strong>출처 표기 (공공누리 §1):</strong> 본 저작물은 교육부·KERIS(한국교육학술정보원)·KEDI(한국교육개발원)·KRIVET(한국직업능력연구원)에서 작성하여 공공누리 제1유형으로 개방한 자료를 활용하였으며, 각 출처 URL(schoolinfo.go.kr · kess.kedi.re.kr · edmgr.kr · open.neis.go.kr · krivet.re.kr)에서 무료로 다운로드 가능합니다.<br/><br/>
+      <strong>※ 시연 프로토타입 안내:</strong> 본 사이트의 17 시도 분포·검증셋 진행률·정책 효과 시뮬레이션은 <strong>개념 시각화 및 시연 시뮬레이션</strong>이며, 실측 데이터는 Phase 0 PoC (시범 1교 M1~M3) 완료 시점에 학교알리미 OpenAPI 및 자체 검증셋 측정으로 확정 예정입니다. 본문 PDF 기획서 참조.
+    </div>
+  </div>
+</footer>
+
+<div class="region-tooltip" id="region-tooltip">
+  <div class="name"></div>
+  <div class="val"></div>
+</div>
+
+<script>
+// ==================== SECTION 1: KOREA MAP D3 ====================
+const regionData = {
+  '서울특별시': { rate: 2.1, schools: 1325, level: 2 },
+  '인천광역시': { rate: 2.8, schools: 522, level: 3 },
+  '경기도': { rate: 3.4, schools: 2456, level: 4 },
+  '강원특별자치도': { rate: 1.6, schools: 638, level: 1 },
+  '대전광역시': { rate: 2.7, schools: 313, level: 3 },
+  '세종특별자치시': { rate: 2.0, schools: 142, level: 2 },
+  '충청북도': { rate: 2.6, schools: 481, level: 3 },
+  '충청남도': { rate: 3.1, schools: 727, level: 4 },
+  '광주광역시': { rate: 3.3, schools: 318, level: 4 },
+  '대구광역시': { rate: 4.2, schools: 462, level: 5 },
+  '전라북도': { rate: 2.5, schools: 762, level: 3 },
+  '전북특별자치도': { rate: 2.5, schools: 762, level: 3 },
+  '전라남도': { rate: 1.9, schools: 884, level: 2 },
+  '부산광역시': { rate: 3.9, schools: 642, level: 5 },
+  '울산광역시': { rate: 3.2, schools: 251, level: 4 },
+  '경상북도': { rate: 2.7, schools: 935, level: 3 },
+  '경상남도': { rate: 3.0, schools: 980, level: 4 },
+  '제주특별자치도': { rate: 1.5, schools: 195, level: 1 }
+};
+const levelColors = ['#DBEAFE', '#93C5FD', '#60A5FA', '#3B82F6', '#2563EB', '#1E3A8A'];
+
+const svg = d3.select('#map-svg');
+const width = 720, height = 540;
+svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+d3.json('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json')
+  .then(data => {
+    const projection = d3.geoMercator().fitSize([width, height], data);
+    const path = d3.geoPath().projection(projection);
+    const tooltip = d3.select('#region-tooltip');
+
+    svg.selectAll('path')
+      .data(data.features)
+      .enter().append('path')
+      .attr('class', 'region-path')
+      .attr('d', path)
+      .attr('fill', d => {
+        const name = d.properties.name || d.properties.NAME_1 || '';
+        const region = regionData[name] || regionData[name + '도'] || regionData[name + '광역시'] || regionData[name + '특별시'];
+        return region ? levelColors[region.level] : '#E5E7EB';
+      })
+      .on('mouseover', function(event, d) {
+        const name = d.properties.name || d.properties.NAME_1 || '';
+        const region = regionData[name] || regionData[name + '도'] || regionData[name + '광역시'] || regionData[name + '특별시'];
+        tooltip.classed('show', true);
+        tooltip.select('.name').text(name);
+        tooltip.select('.val').text(region ? `학교폭력 발생률 ${region.rate}‰ · ${region.schools.toLocaleString()}개 학교` : '데이터 없음');
+      })
+      .on('mousemove', function(event) {
+        tooltip.style('left', (event.pageX + 12) + 'px').style('top', (event.pageY + 12) + 'px');
+      })
+      .on('mouseout', function() {
+        tooltip.classed('show', false);
+      })
+      .on('click', function(event, d) {
+        const name = d.properties.name || d.properties.NAME_1 || '';
+        const region = regionData[name] || regionData[name + '도'] || regionData[name + '광역시'] || regionData[name + '특별시'];
+        if (region) {
+          document.querySelector('#selected-region .name').textContent = name;
+          document.querySelector('#selected-region .stat').innerHTML =
+            `학교폭력 발생률 <strong>${region.rate}‰</strong> · 학교수 <strong>${region.schools.toLocaleString()}</strong>개 · ` +
+            `본 시스템 도입 시 매뉴얼 도달 평균 <strong>30초</strong> 보장`;
+        }
+      });
+  })
+  .catch(err => {
+    console.error('Map load failed:', err);
+    d3.select('#korea-map').html('<div style="padding:60px 20px;text-align:center;color:#6B7280;">지도 데이터 로딩 실패 — 부록 PDF 참조</div>');
+  });
+
+// ==================== SECTION 2: RAG DEMO ====================
+const scenarios = {
+  '학생이 다른 학생을 때렸어요': {
+    title: '⚠ 학교폭력 즉시 절차',
+    items: [
+      { content: '학교폭력예방법 §17 즉시 분리', source: '법제처 OpenAPI' },
+      { content: '24시간 내 보호자 통보', source: '학폭법 §16·§14' },
+      { content: '즉시분리 7일 + 학습권 보호', source: '학폭법 §17의2' },
+      { content: '사안접수 보고서 + 보호자 통보 양식', source: '교육부 매뉴얼' },
+      { content: '학교알리미 동급 학교 평균 처리일 16일', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+    ]
+  },
+  '학부모가 큰 소리로 항의하고 있어요': {
+    title: '⚠ 교권침해 즉시 절차',
+    items: [
+      { content: '교원지위법 §6·§7 (교육활동 보호)', source: '법제처 OpenAPI' },
+      { content: '학교교권보호위 7일 분리·보호 절차', source: '교원지위법 §15' },
+      { content: '증거 보전 (녹취·증인) + 경위서 양식', source: '교육부 교권보호 매뉴얼' },
+      { content: '교육청 보고 양식', source: '시도교육청 양식' },
+      { content: '학교알리미 안전사고 통계 (교권 패턴)', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+    ]
+  },
+  '화학실에서 약품이 새고 있어요': {
+    title: '⚠ 재난·안전 비상 대응',
+    items: [
+      { content: '산업안전보건법 + 학교안전법 즉시 조치', source: '법제처 OpenAPI' },
+      { content: '119 신고 + 학생 대피 동선 안내', source: '학교안전법 §10' },
+      { content: '중대재해 보고 양식 (필요 시)', source: '교육부 매뉴얼' },
+      { content: '학교 안전사고 보고 절차', source: '시도교육청 양식' },
+      { content: '학교알리미 안전사고 통계 (유사 사례)', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+    ]
+  },
+  '학생이 자해 흔적을 보여요': {
+    title: '⚠ 위기학생 즉시 보호',
+    items: [
+      { content: '학생자살예방 매뉴얼 즉시 적용', source: '교육부 매뉴얼' },
+      { content: 'Wee클래스 연계 + 보호자 통보', source: '학생자살예방 §4' },
+      { content: '교육청 위기학생 보고 양식', source: '시도교육청 양식' },
+      { content: '학생 노출 강제 마스킹 (전자칠판 잠금)', source: '본 시스템 보안' },
+      { content: 'KESS 학생 정서·복지 통계 (정책 효과)', source: 'kess.kedi.re.kr · 공공누리 1유형', highlight: true }
+    ]
+  }
+};
+
+function setInput(text) {
+  document.getElementById('rag-input-field').value = text;
+}
+
+function runRAG() {
+  const input = document.getElementById('rag-input-field').value;
+  const scenario = scenarios[input] || scenarios['학생이 다른 학생을 때렸어요'];
+  ['step-0', 'step-1', 'step-2'].forEach(id => document.getElementById(id).className = 'rag-step');
+  document.getElementById('rag-output').classList.remove('show');
+  document.getElementById('step-0').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('step-0').classList.remove('active');
+    document.getElementById('step-0').classList.add('done');
+    document.getElementById('step-1').classList.add('active');
+  }, 800);
+  setTimeout(() => {
+    document.getElementById('step-1').classList.remove('active');
+    document.getElementById('step-1').classList.add('done');
+    document.getElementById('step-2').classList.add('active');
+  }, 1600);
+  setTimeout(() => {
+    document.getElementById('step-2').classList.remove('active');
+    document.getElementById('step-2').classList.add('done');
+    document.getElementById('rag-answer-title').textContent = scenario.title;
+    const list = scenario.items.map((item, idx) => `
+      <div class="rag-answer-item${item.highlight ? ' highlight' : ''}">
+        <span class="num">${'①②③④⑤'[idx]}</span>
+        <span class="content">${item.content}</span>
+        <span class="source">${item.highlight ? '⭐ ' : ''}출처: ${item.source}</span>
+      </div>
+    `).join('');
+    document.getElementById('rag-answers').innerHTML = list;
+    document.getElementById('rag-output').classList.add('show');
+  }, 2400);
+}
+
+// ==================== SECTION 3: DATASETS ====================
+const datasets = [
+  { n:1, name:'학교폭력 발생·조치 현황', org:'교육부·KERIS', url:'schoolinfo.go.kr', license:'공공누리 1유형', update:'연 1회 (4월)', scenario:'① 학교폭력 30초', desc:'전국 학교 학교폭력 발생·심의·조치 현황 공시 데이터. 동급 학교 평균 처리일·발생률 등 인용 가능.' },
+  { n:2, name:'학교안전사고 현황', org:'교육부·KERIS', url:'schoolinfo.go.kr', license:'공공누리 1유형', update:'연 1회 (4월)', scenario:'② 교권·재난 30초', desc:'재난·교권침해 등 학교 안전사고 발생 패턴 데이터. 시도별·유형별 분포 제공.' },
+  { n:3, name:'학교회계 공시 정보', org:'교육부·KERIS', url:'schoolinfo.go.kr', license:'공공누리 1유형', update:'연 1회 (5월)', scenario:'예산 집행 분석', desc:'학교회계 과목별 예산·집행률·잔액. 동급 학교 벤치마크 가능.' },
+  { n:4, name:'교원 1인당 학생수·수업시수', org:'교육부·KERIS', url:'schoolinfo.go.kr', license:'공공누리 1유형', update:'연 1회 (4월)', scenario:'정책 분석', desc:'교원 1인당 학생수·교과별 수업시수 데이터. 행정업무 부담 정량 비교.' },
+  { n:5, name:'KESS 교육통계서비스', org:'KEDI 한국교육개발원', url:'kess.kedi.re.kr', license:'공공누리 1유형', update:'연 1회 + 분기', scenario:'사업 필요성', desc:'교원 행정업무 시간 주당 7.23h 등 본 사업 필요성 정책 근거 데이터.' },
+  { n:6, name:'EDSS 에듀데이터서비스', org:'교육부·KERIS', url:'edmgr.kr/edss', license:'공공누리 1유형', update:'실시간 통합', scenario:'마스터 색인 자동', desc:'교육 공공데이터 통합 검색 플랫폼. 본청 마스터 색인 자동 갱신원으로 활용.' },
+  { n:7, name:'NEIS 개방 데이터', org:'KERIS', url:'open.neis.go.kr', license:'공공누리 1유형', update:'일 단위', scenario:'⑬ K-에듀파인 안내', desc:'학사·시간표·반정보·학교과정 정보 OpenAPI. K-에듀파인 절차 안내 데이터.' },
+  { n:8, name:'한국교육고용패널', org:'KRIVET 한국직업능력연구원', url:'krivet.re.kr', license:'공공누리 1유형', update:'연 1회 (패널)', scenario:'정책·학교 환경 분석', desc:'학생·가구·학교·담임 종합 패널 데이터. 학교 운영회·생활지도 평가 데이터 제공.' }
+];
+const grid = document.getElementById('datasets-grid');
+grid.innerHTML = datasets.map(d => `
+  <div class="dataset-card" data-id="${d.n}" onclick="showDataset(${d.n})">
+    <div class="num">데이터셋 ${d.n}</div>
+    <div class="name">${d.name}</div>
+    <div class="org">${d.org}</div>
+    <div class="url">${d.url}</div>
+  </div>
+`).join('');
+function showDataset(n) {
+  document.querySelectorAll('.dataset-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.dataset-card[data-id="${n}"]`).classList.add('active');
+  const d = datasets[n-1];
+  document.getElementById('dataset-detail').innerHTML = `
+    <h3>${d.n}. ${d.name}</h3>
+    <div class="meta">
+      <div class="meta-item"><div class="l">운영 주체</div><div class="v">${d.org}</div></div>
+      <div class="meta-item"><div class="l">출처 URL</div><div class="v">${d.url}</div></div>
+      <div class="meta-item"><div class="l">라이선스</div><div class="v">${d.license}</div></div>
+      <div class="meta-item"><div class="l">갱신 주기</div><div class="v">${d.update}</div></div>
+    </div>
+    <div class="desc"><strong>결합 시나리오:</strong> ${d.scenario}<br/><br/>${d.desc}</div>
+  `;
+  document.getElementById('dataset-detail').classList.add('show');
+}
+
+// ==================== SECTION 4: VALIDATION ====================
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.val-cat-bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.target + '%';
+      });
+    }
+  });
+}, { threshold: 0.2 });
+observer.observe(document.querySelector('.val-categories'));
+
+// ==================== SECTION 5: SIMULATOR ====================
+function runSim() {
+  const schools = +document.getElementById('r-schools').value;
+  const teachers = +document.getElementById('r-teachers').value;
+  const cur = +document.getElementById('r-time').value;
+  const tgt = +document.getElementById('r-target').value;
+  document.getElementById('v-schools').textContent = schools.toLocaleString();
+  document.getElementById('v-teachers').textContent = teachers;
+  document.getElementById('v-time').textContent = cur;
+  document.getElementById('v-target').textContent = tgt;
+  const savingPct = ((cur * 60 - tgt) / (cur * 60) * 100).toFixed(1);
+  const annualHours = (schools * teachers * 0.05 * (cur - tgt/60)).toFixed(0);
+  const annualValue = (annualHours * 25000 / 10000).toFixed(0);
+  document.getElementById('o-saving').textContent = savingPct + '%';
+  document.getElementById('o-hours').textContent = (+annualHours).toLocaleString() + ' 시간';
+  document.getElementById('o-value').textContent = '₩' + (+annualValue).toLocaleString() + '만';
+}
+runSim();
+showDataset(1);
+</script>
+
+</body>
+</html>
