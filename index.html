@@ -18,7 +18,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
   font-feature-settings: 'tnum';
   color: var(--gray-900); background: var(--gray-50); line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -252,7 +252,7 @@ footer .footer-bottom strong { color: var(--white); }
 <!-- ==================== HERO ==================== -->
 <section class="hero">
   <div class="container hero-content">
-    <span class="hero-tag">제8회 교육 공공데이터 AI 활용대회 일반부 · 프로토타입 시연</span>
+    <span class="hero-tag">제8회 교육 공공데이터 AI 활용대회 일반부 · 시스템명: 교육 공공데이터 8 결합 RAG 보좌시스템 · 프로토타입 시연</span>
     <h1 class="hero-title">교실 골든타임 30초<br/><span style="opacity:0.85;font-weight:600;">학교 PC가 모든 답을 가지고 있다</span></h1>
     <p class="hero-sub">교실 위기 30초 + 일상 행정 30% 경감 — <strong>14 시나리오 통합</strong> (비상 4 + 행정 12). 매뉴얼 도달 30분 → <strong>30초</strong>·교원 행정 7.23h/주 → 5h. 교육 공공데이터 8 결합 RAG — KERIS·KEDI·KRIVET 인용 강제·외부 전송 0.</p>
     <div class="hero-stats">
@@ -350,6 +350,7 @@ footer .footer-bottom strong { color: var(--white); }
         </div>
       </div>
       <div class="rag-output" id="rag-output">
+        <div style="background: #FEF3C7; color: #92400E; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; margin-bottom: 14px; border-left: 4px solid #F59E0B; line-height: 1.5;">⚠ 시뮬레이션 답변 — 본 시연은 RAG 시스템의 답변 형식·5 묶음 구조·출처 라벨 메커니즘 시연. 실제 답변은 시범 1교 Phase 0 PoC 적용 후 학교알리미·법제처 OpenAPI 등 실데이터로 출력.</div>
         <div class="rag-output-label">📋 T+30초 — 답변 5 묶음 (모든 인용에 출처 라벨 강제)</div>
         <div class="rag-answer-title" id="rag-answer-title">⚠ 학교폭력 즉시 절차</div>
         <div id="rag-answers"></div>
@@ -552,8 +553,9 @@ d3.json('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kos
         if (region) {
           document.querySelector('#selected-region .name').textContent = name;
           document.querySelector('#selected-region .stat').innerHTML =
-            `학교폭력 발생률 <strong>${region.rate}‰</strong> · 학교수 <strong>${region.schools.toLocaleString()}</strong>개 · ` +
-            `본 시스템 도입 시 매뉴얼 도달 평균 <strong>30초</strong> 보장`;
+            `발생률 <strong>${region.rate}‰ (예시)</strong> · 학교수 <strong>${region.schools.toLocaleString()}</strong>개 · ` +
+            `본 시스템 도입 시 매뉴얼 도달 <strong>30초</strong> 보장` +
+            `<br/><span style="color:#92400E;font-size:11px;font-weight:700;display:inline-block;margin-top:6px;">⚠ 예시 수치 — 실데이터는 Phase 0 PoC 시점에 학교알리미 OpenAPI 직접 매핑</span>`;
         }
       });
   })
