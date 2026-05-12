@@ -29,14 +29,28 @@ body {
 
 /* ==================== HEADER ==================== */
 .hero {
-  background: linear-gradient(135deg, var(--db-700) 0%, var(--db-500) 100%);
-  color: var(--white); padding: 80px 0 100px; position: relative; overflow: hidden;
+  background: linear-gradient(160deg, var(--db-700) 0%, var(--db-500) 55%, var(--db-300) 100%);
+  color: var(--white); padding: 80px 0 140px; position: relative; overflow: hidden;
 }
 .hero::before {
   content: ''; position: absolute; top: -100px; right: -100px;
   width: 500px; height: 500px; border-radius: 50%;
   background: rgba(255,255,255,0.08);
 }
+.hero::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 100px; pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, rgba(249,250,251,0.4) 60%, var(--gray-50) 100%);
+}
+.scroll-cue {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85);
+  letter-spacing: 1.5px; text-transform: uppercase; z-index: 2;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+.scroll-cue .arrow { font-size: 18px; }
+@keyframes scrollBounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
 .hero-content { position: relative; z-index: 1; }
 .hero-tag {
   display: inline-block; background: rgba(255,255,255,0.15);
@@ -61,8 +75,9 @@ body {
 .btn-ghost:hover { background: rgba(255,255,255,0.1); }
 
 /* ==================== SECTION COMMON ==================== */
-.section { padding: 80px 0; }
+.section { padding: 80px 0; background: var(--gray-50); }
 .section-light { background: var(--white); }
+.section + .section-light, .section-light + .section { position: relative; }
 .section-tag {
   display: inline-block; background: var(--db-100); color: var(--db-700);
   padding: 6px 14px; border-radius: 16px;
@@ -268,6 +283,10 @@ footer .footer-bottom strong { color: var(--white); }
       <a href="#map" class="btn btn-ghost">17 시도 분포 보기</a>
     </div>
   </div>
+  <a href="#map" class="scroll-cue" aria-label="스크롤 다운">
+    <span>스크롤</span>
+    <span class="arrow">▼</span>
+  </a>
 </section>
 
 <!-- ==================== SECTION 1: KOREA MAP ==================== -->
