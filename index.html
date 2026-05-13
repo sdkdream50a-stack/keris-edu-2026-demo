@@ -662,10 +662,10 @@ const scenarios = {
     title: '⚠ 학교폭력 즉시 절차',
     items: [
       { content: '학교폭력예방법 §17 즉시 분리', source: '법제처 OpenAPI' },
-      { content: '24시간 내 보호자 통보', source: '학폭법 §16·§14' },
-      { content: '즉시분리 7일 + 학습권 보호', source: '학폭법 §17의2' },
-      { content: '사안접수 보고서 + 보호자 통보 양식', source: '교육부 매뉴얼' },
-      { content: '학교알리미 동급 학교 평균 처리일 16일', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+      { content: '24h 통보 + 학교폭력 발생·조치 공시 통계 결합', source: '학폭법 §16 + 학교알리미 ⭐', highlight: true },
+      { content: '즉시분리 7일 + KESS 행정업무 부담 추정', source: '학폭법 §17의2 + KESS' },
+      { content: '사안접수 양식 + EDSS 통합 검색', source: '교육부 매뉴얼 + EDSS' },
+      { content: '동급 학교 평균 처리일 + 학교 환경 평가 다차원', source: '학교알리미 + KRIVET ⭐', highlight: true }
     ]
   },
   '학부모가 큰 소리로 항의하고 있어요': {
@@ -701,11 +701,11 @@ const scenarios = {
   '운영비 잔액과 집행률은?': {
     title: '💰 예산 집행 즉시 분석',
     items: [
-      { content: '학교회계 과목 코드: 운영비-기본운영-행정운영비 잔액', source: '학교회계규칙 §17' },
-      { content: '월별 집행률 추이 + 동기 대비 (전년·전월)', source: '지방교육행정기관 회계규칙' },
-      { content: '추경·이월·전용 가능성 분석 + 시한', source: '시도교육청 예산편성 지침' },
-      { content: '불용 위험 경고 (집행률 < 60% 시)', source: '본 시스템 분석' },
-      { content: '학교알리미 동급 학교 회계 벤치마크 ⭐', source: 'data.go.kr · 공공누리 1유형', highlight: true }
+      { content: '학교회계 공시 + 회계규칙 §17 잔액·집행률', source: '학교회계규칙 + 학교알리미 ⭐', highlight: true },
+      { content: '월별 집행률 + 교원 1인당 시수 결합 (부담 패턴)', source: '회계규칙 + 학교알리미 교원시수' },
+      { content: '추경·이월·전용 + EDSS 통합 검색', source: '시도교육청 예산편성 + EDSS' },
+      { content: '학교알리미 동급 학교 회계 벤치마크', source: '학교알리미 학교회계 공시 ⭐', highlight: true },
+      { content: 'KESS 교육예산 통계 추세 + KRIVET 학교 평가', source: 'KESS + KRIVET ⭐', highlight: true }
     ]
   },
   '수의계약 한도와 절차?': {
@@ -731,11 +731,11 @@ const scenarios = {
   '올해 교육과정계획서 비전 초안': {
     title: '📚 교육과정계획서 작성 자동 초안',
     items: [
-      { content: '2022 개정 교육과정 학교 비전 4축', source: '교육부 교육과정 고시' },
-      { content: '시도교육청 교육과정 시책 (올해 중점)', source: '시도교육청 교육과정 매뉴얼' },
-      { content: '전년도 학교 교육과정 자료 기반 초안 자동 생성', source: 'kb_school + RAG' },
-      { content: '학교운영위원회 심의 일정 + 양식', source: '학교운영위원회 매뉴얼' },
-      { content: '한국교육고용패널 학교 평가 데이터 결합 ⭐', source: 'krivet.re.kr · 공공누리 1유형', highlight: true }
+      { content: '2022 개정 교육과정 + 교원 1인당 학생수·시수 결합', source: '교육과정 고시 + 학교알리미 ⭐', highlight: true },
+      { content: '시도교육청 시책 + EDSS 통합 검색', source: '시도교육청 + EDSS' },
+      { content: 'KESS 교육과정 통계 + 학교운영위 양식', source: 'KESS + 학교운영위 매뉴얼 ⭐', highlight: true },
+      { content: 'NEIS 학사 일정 자동 결합 + 양식 자동', source: 'NEIS + kb_school' },
+      { content: 'KRIVET 학교 환경 평가 다차원 결합', source: 'krivet.re.kr · 학교 평가 ⭐', highlight: true }
     ]
   }
 };
