@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>교실 골든타임 30초 — 교육 공공데이터 8 결합 AI 보좌시스템 시연</title>
 <meta name="description" content="제8회 교육 공공데이터 AI 활용대회 일반부 — KERIS·KEDI·KRIVET 8 데이터셋 결합 RAG 시스템 시연 프로토타입">
+<!-- PWA (15차 라운드 추가) — W3C Service Worker + Web App Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1E3A8A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="골든타임 30초">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="icon" type="image/svg+xml" href="icon-192.svg">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
@@ -844,6 +852,40 @@ function runSim() {
 }
 runSim();
 showDataset(1);
+
+/* ===== PWA Service Worker 등록 (15차 라운드 — W3C 표준) ===== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => {
+        console.log('[PWA] Service Worker 등록 성공:', reg.scope);
+        // 갱신 감지 — 새 SW 활성화 시 알림
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] 새 버전 사용 가능 — 새로고침하면 적용됩니다.');
+              }
+            });
+          }
+        });
+      })
+      .catch(err => console.error('[PWA] Service Worker 등록 실패:', err));
+  });
+}
+
+/* ===== PWA 설치 프롬프트 (Android Chrome) ===== */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  console.log('[PWA] 설치 가능 — 홈 화면에 추가 가능합니다.');
+});
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] 설치 완료 — 골든타임 30초 PWA가 홈 화면에 추가되었습니다.');
+  deferredInstallPrompt = null;
+});
 </script>
 
 </body>
