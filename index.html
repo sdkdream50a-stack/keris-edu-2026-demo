@@ -151,10 +151,38 @@ body {
   cursor: pointer; font-family: inherit; transition: all 0.15s;
 }
 .rag-quick button:hover { background: var(--db-700); color: var(--white); border-color: var(--db-700); }
-.rag-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0 24px; }
-.rag-step { padding: 18px 20px; border-radius: 10px; background: var(--gray-50); border-top: 4px solid var(--gray-300); transition: all 0.3s; }
-.rag-step.active { background: var(--db-100); border-top-color: var(--db-700); }
-.rag-step.done { background: #ECFDF5; border-top-color: var(--ok); }
+.rag-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0 24px; position: relative; }
+.rag-step { padding: 20px 22px 18px; border-radius: 10px; background: var(--gray-50); border-top: 4px solid var(--gray-300); border-left: 1px solid var(--gray-200); transition: all 0.3s; position: relative; }
+.rag-step::before {
+  content: ''; position: absolute; right: -12px; top: 50%; width: 0; height: 0;
+  border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+  border-left: 10px solid var(--gray-300); transform: translateY(-50%); z-index: 1;
+}
+.rag-step:last-child::before { display: none; }
+/* 단계별 base 색상 (입력=파랑·검색=보라·응답=녹색) */
+#step-0 { background: linear-gradient(180deg, #EFF6FF 0%, var(--gray-50) 100%); border-top-color: var(--db-300); }
+#step-1 { background: linear-gradient(180deg, #F5F3FF 0%, var(--gray-50) 100%); border-top-color: #A78BFA; }
+#step-1 .t, #step-1 .step-num { color: #6D28D9; }
+#step-2 { background: linear-gradient(180deg, #ECFDF5 0%, var(--gray-50) 100%); border-top-color: #6EE7B7; }
+#step-2 .t, #step-2 .step-num { color: #047857; }
+/* active 상태 (현재 진행) — 진한 배경 + 큰 그림자 + 펄스 */
+.rag-step.active { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(30,58,138,0.18); }
+#step-0.active { background: linear-gradient(180deg, var(--db-100) 0%, #EFF6FF 100%); border-top-color: var(--db-700); border-top-width: 6px; }
+#step-1.active { background: linear-gradient(180deg, #EDE9FE 0%, #F5F3FF 100%); border-top-color: #6D28D9; border-top-width: 6px; }
+#step-2.active { background: linear-gradient(180deg, #D1FAE5 0%, #ECFDF5 100%); border-top-color: var(--ok); border-top-width: 6px; }
+/* done 상태 (완료) — 체크 마크 */
+.rag-step.done { background: #F0FDF4; border-top-color: var(--ok); opacity: 0.92; }
+.rag-step.done::after {
+  content: '✓'; position: absolute; top: 14px; right: 14px;
+  background: var(--ok); color: var(--white); width: 24px; height: 24px;
+  border-radius: 50%; font-size: 14px; font-weight: 800; line-height: 24px; text-align: center;
+}
+.rag-step.done::before { border-left-color: var(--ok); }
+.rag-step .step-num {
+  display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center;
+  background: var(--white); color: var(--db-700); border: 2px solid currentColor;
+  border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 6px; vertical-align: middle;
+}
 .rag-step .t { font-size: 13px; font-weight: 800; color: var(--db-700); letter-spacing: 0.5px; }
 .rag-step .l { font-size: 16px; font-weight: 700; color: var(--gray-900); margin: 6px 0; letter-spacing: -0.3px; }
 .rag-step .d { font-size: 13px; color: var(--gray-700); font-weight: 500; line-height: 1.5; }
@@ -186,8 +214,13 @@ body {
 .dataset-card.active { background: var(--db-100); border-top-color: var(--accent); }
 .dataset-card .num { font-size: 13px; font-weight: 700; color: var(--db-700); letter-spacing: 0.5px; }
 .dataset-card .name { font-size: 17px; font-weight: 800; color: var(--gray-900); margin: 6px 0; letter-spacing: -0.4px; line-height: 1.3; }
-.dataset-card .org { font-size: 12px; color: var(--gray-500); font-weight: 600; margin-bottom: 6px; }
-.dataset-card .url { font-size: 11px; color: var(--db-700); font-weight: 600; font-family: 'SF Mono', monospace; word-break: break-all; }
+.dataset-card .org { font-size: 12px; color: var(--gray-500); font-weight: 600; margin-bottom: 4px; }
+.dataset-card .url { font-size: 11px; color: var(--db-700); font-weight: 600; font-family: 'SF Mono', monospace; word-break: break-all; margin-bottom: 8px; }
+.dataset-card .update {
+  display: inline-block; background: var(--db-100); color: var(--db-700);
+  padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
+  letter-spacing: -0.2px; margin-top: 4px;
+}
 .dataset-detail {
   background: var(--white); border-radius: 16px; padding: 32px; margin-top: 24px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: none;
@@ -276,8 +309,33 @@ footer .footer-bottom strong { color: var(--white); }
   .hero-title { font-size: 36px; }
   .hero-sub { font-size: 17px; }
   .section-title { font-size: 28px; }
+  .section { padding: 48px 0; }
+  .section-sub { margin-bottom: 28px; font-size: 16px; }
+  .hero { padding: 60px 0 100px; }
   .hero-stats, .rag-steps, .datasets-grid, .sim-container, .val-grid, .val-target-stats, footer .footer-row { grid-template-columns: 1fr; }
   #map-container { grid-template-columns: 1fr; }
+  /* 1. 지도 모바일 확대 — 폭 전체 + 높이 늘림 */
+  #korea-map { padding: 16px; }
+  #korea-map svg { height: 68vh; min-height: 460px; max-height: 620px; }
+  .map-side { padding: 20px; }
+  /* 2. 시연 시작 버튼 모바일 가시성 — 버튼이 input 위로, full-width */
+  .rag-demo { padding: 24px 18px; }
+  .rag-input-box { padding: 18px 16px; }
+  .rag-input-row { flex-direction: column-reverse; gap: 10px; }
+  .rag-input-row .btn { width: 100%; padding: 16px 20px; font-size: 17px; }
+  .rag-input { width: 100%; padding: 13px 14px; font-size: 16px; }
+  .rag-quick { gap: 6px; }
+  .rag-quick button { padding: 8px 12px; font-size: 13px; }
+  /* 4. 단계 화살표 모바일에서는 아래 방향 */
+  .rag-step::before {
+    right: 50%; top: auto; bottom: -16px; transform: translateX(50%);
+    border-top: 12px solid var(--gray-300); border-bottom: none;
+    border-left: 10px solid transparent; border-right: 10px solid transparent;
+  }
+  .rag-step.done::before { border-top-color: var(--ok); }
+  /* 5. 데이터셋 카드 갱신주기 — 모바일에서 한 화면 안에 보이도록 */
+  .dataset-card { padding: 18px 18px 20px; }
+  .dataset-card .update { font-size: 13px; padding: 5px 12px; }
 }
 </style>
 </head>
@@ -345,14 +403,14 @@ footer .footer-bottom strong { color: var(--white); }
 <!-- ==================== SECTION 2: RAG DEMO ==================== -->
 <section class="section" id="demo">
   <div class="container">
-    <span class="section-tag">② AI 보좌시스템 실시간 시연 — 8 시나리오</span>
-    <h2 class="section-title">▶ 8개 버튼 클릭 → 30초 답변 직접 시연</h2>
-    <p class="section-sub">아래 <strong>교실 4 + 행정 4 버튼</strong> 중 하나를 클릭하세요. 각 시나리오에서 <strong>법령·예규·매뉴얼·학교알리미 데이터 5건이 자동 인용</strong>되는 RAG 파이프라인을 30초 안에 시연합니다 (본 시스템 적용 시 활용 목표).</p>
+    <span class="section-tag">② AI 보좌시스템 실시간 시연 — 12 시나리오</span>
+    <h2 class="section-title">▶ 12개 버튼 클릭 → 30초 답변 직접 시연</h2>
+    <p class="section-sub">아래 <strong>교실 4 + 행정 4 + 교무 행정 4 버튼</strong> 중 하나를 클릭하세요. 각 시나리오에서 <strong>법령·예규·매뉴얼·학교알리미 데이터 5건이 자동 인용</strong>되는 RAG 파이프라인을 30초 안에 시연합니다 (본 시스템 적용 시 활용 목표).</p>
     <div class="rag-demo">
       <div class="rag-input-box">
         <div class="rag-input-label">⌨ 교사 입력 (Ctrl+Alt+1 단축키 또는 음성)</div>
         <div class="rag-input-row">
-          <input type="text" class="rag-input" id="rag-input-field" value="" placeholder="아래 교실 4 + 행정 4 버튼 클릭 또는 직접 입력...">
+          <input type="text" class="rag-input" id="rag-input-field" value="" placeholder="아래 교실 4 + 행정 4 + 교무 4 버튼 클릭 또는 직접 입력...">
           <button class="btn btn-primary" id="rag-start" onclick="runRAG()">▶ 시연 시작</button>
         </div>
         <div class="rag-quick">
@@ -368,6 +426,13 @@ footer .footer-bottom strong { color: var(--white); }
           <button onclick="setInput('수의계약 한도와 절차?')">📋 수의계약</button>
           <button onclick="setInput('교사 출장 일비 기준?')">✈ 복무·여비</button>
           <button onclick="setInput('올해 교육과정계획서 비전 초안')">📚 교육과정</button>
+        </div>
+        <div class="rag-quick" style="margin-top:8px;">
+          <span style="font-size:13px;font-weight:700;color:var(--db-700);margin-right:6px;align-self:center;">교무 행정 4:</span>
+          <button onclick="setInput('전입학생 학적 등록 절차는?')">📝 학적·전출입</button>
+          <button onclick="setInput('학기 시간표 편성 시 NEIS 입력 순서?')">📅 시간표 편성</button>
+          <button onclick="setInput('지필평가 성적 정정 절차와 결재선?')">📊 평가·성적 처리</button>
+          <button onclick="setInput('생활기록부 행동특성 작성 유의사항?')">📒 생활기록부</button>
         </div>
       </div>
       <div class="rag-steps">
@@ -802,6 +867,7 @@ grid.innerHTML = datasets.map(d => `
     <div class="name">${d.name}</div>
     <div class="org">${d.org}</div>
     <div class="url">${d.url}</div>
+    <div class="update">🔄 ${d.update}</div>
   </div>
 `).join('');
 function showDataset(n) {
