@@ -3,7 +3,7 @@
 // 표준: W3C Service Worker · NIST SP 800-124 (Mobile Device Security)
 // 본 SW는 오프라인 캐시만 제공하며, 외부 서버로 사용자 데이터를 전송하지 않습니다.
 
-const CACHE_VERSION = 'v15-2026-05-15';
+const CACHE_VERSION = 'v16-2026-05-16-mobile-ux';
 const CACHE_NAME = `keris-edu-2026-${CACHE_VERSION}`;
 
 // 사전 캐시 대상 — 첫 방문 시 install 단계에서 캐시
