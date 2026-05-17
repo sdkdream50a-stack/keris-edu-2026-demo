@@ -336,6 +336,14 @@ footer .footer-bottom strong { color: var(--white); }
   /* 5. 데이터셋 카드 갱신주기 — 모바일에서 한 화면 안에 보이도록 */
   .dataset-card { padding: 18px 18px 20px; }
   .dataset-card .update { font-size: 13px; padding: 5px 12px; }
+  /* 6. 데이터셋 상세 메타 (4컬럼) — 모바일에서는 2×2 — 갱신주기 가로 오버플로 방지 */
+  .dataset-detail { padding: 22px 18px; }
+  .dataset-detail .meta { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dataset-detail .meta-item { padding: 12px 14px; }
+  .dataset-detail .meta-item .v { font-size: 15px; word-break: keep-all; }
+  /* 7. 데이터 시각화 차트 그리드 — 모바일에서는 1컬럼 — 오른쪽 카드 화면 밖 이탈 방지 */
+  .charts-grid { grid-template-columns: 1fr; gap: 16px; }
+  .chart-card { padding: 22px 20px; }
 }
 </style>
 </head>
@@ -680,7 +688,10 @@ const regionData = {
 const levelColors = ['#DBEAFE', '#93C5FD', '#60A5FA', '#3B82F6', '#2563EB', '#1E3A8A'];
 
 const svg = d3.select('#map-svg');
-const width = 720, height = 540;
+/* 모바일 세로 컨테이너 (약 3:4)에 한반도가 letterboxing 없이 가득 차도록 viewBox 세로형 사용 */
+const isMobileMap = window.matchMedia('(max-width: 768px)').matches;
+const width = isMobileMap ? 540 : 720;
+const height = isMobileMap ? 720 : 540;
 svg.attr('viewBox', `0 0 ${width} ${height}`);
 
 d3.json('https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json')
